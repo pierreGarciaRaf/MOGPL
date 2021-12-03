@@ -1,14 +1,33 @@
 import re
 """
 Formal types definitions:
-a vertex is a string (name)
+mgVertex := string (name)
 
 
-an edge is (string*string*int*int)
+mgEdge := mgVertex*mgVertex*int*int
 0-Start vertex
 1-End vertex
 2-Start date
 3-Edge duration
+
+vertex := string*int
+0-Name
+1-Time
+
+
+edge := vertex*vertex*int
+0-Start vertex
+1-End vertex
+2-Cost
+
+multigraph := dict(mgVertex->list(mgEdge)*list(mgEdge))
+corresponding ingoing (first list) edges & outgoing (second list) edges.
+
+
+in&out := dict(mgVertex->list(vertex)*list(vertex))
+defined in the subject
+
+graph := list(vertex)*list(edge)
 """
 
 vertStrToVertName = re.compile("\S")
@@ -44,10 +63,9 @@ def strToEdge(toConvert):
 
 def createMultiGraphFromFile(filepath):
     """
-        string->dict(vertex->list(edge)*list(edge))
+        string->multigraph
         Reads the file written as specified in the paper.
-        Creates a multigraph dictionnary giving all vertices
-        with corresponding outgoing (first list) edges & ingoing (second list) edges.
+        Creates a multigraph
     """
     nonBlankLines = getNonBlankLines(open(filepath, "r"))
     vertexNb = int(nonBlankLines[0])
@@ -72,10 +90,72 @@ def createMultiGraphFromFile(filepath):
                 outgoingList.append(edge)
             elif edge[1] == vertName:
                 ingoingList.append(edge)
-        toRet[vertName] = (outgoingList,ingoingList)
+        toRet[vertName] = (ingoingList,outgoingList)
     return toRet
 
 
+def generateInAndOut(multigraph):
+    """
+        multigraph->in&out
+        generates in & out array as defined in the paper
+    """
+    inAndOut = {}
+    for vertex in multigraph.keys():
+        
+        
+        ingoing,outgoing = multigraph[vertex]
+        vin = []
+        for edge in ingoing:
+            _,_,t,dt = edge
+            if not (vertex,t+dt) in vin:
+                vin.append((vertex,t+dt))
+        
+        vout =[]
+        for edge in outgoing:
+            _,_,t,_ = edge
+            if not (vertex,t) in vout:
+                vout.append((vertex,t))
+        inAndOut[vertex] = vin,vout
+    return inAndOut
 
+def mergeSets(setA,setB):
+    """
+        list(a)*list(a)->list(a)
 
-print(createMultiGraphFromFile("graphs/graphEx2.mg"))
+        merges the two lists with no repetition.
+        (Assuming there is no repetition in both lists)
+    """
+    toRet = []
+    for a in setA:
+        toRet.append(a)
+    for b in setB:
+        if not b in setA:
+            toRet.append(b)
+    return toRet
+
+def generateTildeGraph(multigraph, inAndOut):
+    """
+        multigraph*in&out->graph
+        using the multigraph and it's inAndOut array, generates the associated pondered graph.
+    """
+    V = []
+    E = []
+    for mgVertex in inAndOut.keys():
+        inSet,outSet = inAndOut[mgVertex]
+        linkedSet = sorted(mergeSets(inSet,outSet), key = lambda x : x[1])
+        for startVertIndex in range(len(linkedSet)-1):
+            E.append((  linkedSet[startVertIndex],
+                        linkedSet[startVertIndex+1],0))
+        V+= linkedSet
+        _,outgoing = multigraph[mgVertex]
+
+        for _,endmgV,t,dt in outgoing:
+            E.append(((mgVertex, t),(endmgV, t+dt), dt))
+        
+    return V,E
+
+mg = createMultiGraphFromFile("graphs/graphEx2.mg")
+iao = generateInAndOut(mg)
+V,E = generateTildeGraph(mg, iao)
+print(V)
+print(E)
