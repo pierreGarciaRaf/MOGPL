@@ -32,10 +32,10 @@ graph := list(vertex)*list(edge)
 
 vertStrToVertName = re.compile("\S")
 
-def getNonBlankLines(f):
+def getNonBlankLines(lines):
     nonBlankLines = []
     nonBlankLineRegExp = re.compile("\S+")
-    for line in f.readlines():
+    for line in lines:
         if nonBlankLineRegExp.match(line):
             nonBlankLines.append(line)
     return nonBlankLines
@@ -61,13 +61,13 @@ def strToEdge(toConvert):
     return vals[0].strip(),vals[1].strip(),int(vals[2]),int(vals[3])
 
 
-def createMultiGraphFromFile(filepath):
+def createMultiGraphFromLineArray(lineArray):
     """
-        string->multigraph
+        list(string)->multigraph
         Reads the file written as specified in the paper.
         Creates a multigraph
     """
-    nonBlankLines = getNonBlankLines(open(filepath, "r"))
+    nonBlankLines = getNonBlankLines(lineArray)
     vertexNb = int(nonBlankLines[0])
     edgeNb = int(nonBlankLines[1])
     
@@ -154,8 +154,40 @@ def generateTildeGraph(multigraph, inAndOut):
         
     return V,E
 
-mg = createMultiGraphFromFile("graphs/graphEx2.mg")
-iao = generateInAndOut(mg)
-V,E = generateTildeGraph(mg, iao)
+
+
+def createMultigraphAndGraphFromLineArray(lineArray):
+    """
+        list(string)->multigraph*graph
+        creates a graph
+    """
+    mg = createMultiGraphFromLineArray(lineArray)
+    iao = generateInAndOut(mg)
+    V,E = generateTildeGraph(mg, iao)
+    return mg, (V, E)
+
+def createMultigraphAndGraphFromFile(filePath):
+    return createMultigraphAndGraphFromLineArray(open(filePath,"r").readlines())
+
+
+def createMultigraphAndGraphFromTerminal():
+    vertNb = raw_input("enter the number of vertices of your graph : ")
+    edgesNb = raw_input("enter the number of edges of your graph : ")
+    print("now enter your vertices and edges, (begin with vertices)")
+    lines = [vertNb, edgesNb]
+    i = 0
+    while i < int(vertNb)+int(edgesNb):
+        inp = raw_input()
+        if vertStrToVertName.match(inp):
+            i += 1
+        lines.append(inp)
+    return createMultigraphAndGraphFromLineArray(lines)
+
+mg, (V, E) = createMultigraphAndGraphFromFile("graphs/graphEx1.mg")
+
+print("mg = ")
+print(mg)
+print("V = ")
 print(V)
+print("E = ")
 print(E)
