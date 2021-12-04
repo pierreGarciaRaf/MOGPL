@@ -24,7 +24,7 @@ def displayGraph(g, saveAs):
     for (frName,frTime),(toName,toTime),cost in E:
         display.add_edge(pydot.Edge(frName + " " + str(frTime),\
                                     toName + " " + str(toTime),\
-                                    label = cost))
+                                    label = cost, dir="forward" ))
     extension = saveAs.split(".")[len(saveAs.split("."))-1]
     if extension.upper() == "PNG":
         display.write_png(saveAs)
