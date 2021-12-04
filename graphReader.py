@@ -183,12 +183,3 @@ def createMultigraphAndGraphFromTerminal():
             i += 1
         lines.append(inp)
     return createMultigraphAndGraphFromLineArray(lines)
-
-mg, (V, E) = createMultigraphAndGraphFromFile("graphs/graphEx1.mg")
-
-print("mg = ")
-print(mg)
-print("V = ")
-print(V)
-print("E = ")
-print(E)
