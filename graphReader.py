@@ -21,8 +21,9 @@ edge := vertex*vertex*int
 2-Cost
 
 multigraph := dict(mgVertex->list(mgEdge)*list(mgEdge))
-corresponding ingoing (first list) edges & outgoing (second list) edges.
-
+Each mgVertex has 2 list of edges.
+First list : every multigraph edges (mgEdge) pointing to the mgVertex
+Second list : every multigraph edges (mgEdge) starting from this mgVertex
 
 in&out := dict(mgVertex->list(vertex)*list(vertex))
 defined in the subject
