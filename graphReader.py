@@ -10,6 +10,16 @@ mgEdge := mgVertex*mgVertex*int*int
 2-Start date
 3-Edge duration
 
+
+multigraph := dict(mgVertex->list(mgEdge)*list(mgEdge))
+Each mgVertex has 2 list of edges.
+First list : every multigraph edges (mgEdge) pointing to the mgVertex
+Second list : every multigraph edges (mgEdge) starting from this mgVertex
+
+in&out := dict(mgVertex->list(vertex)*list(vertex))
+defined in the subject
+
+
 vertex := string*int
 0-Name
 1-Time
@@ -19,14 +29,6 @@ edge := vertex*vertex*int
 0-Start vertex
 1-End vertex
 2-Cost
-
-multigraph := dict(mgVertex->list(mgEdge)*list(mgEdge))
-Each mgVertex has 2 list of edges.
-First list : every multigraph edges (mgEdge) pointing to the mgVertex
-Second list : every multigraph edges (mgEdge) starting from this mgVertex
-
-in&out := dict(mgVertex->list(vertex)*list(vertex))
-defined in the subject
 
 graph := list(vertex)*list(edge)
 """
