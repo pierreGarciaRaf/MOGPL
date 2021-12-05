@@ -73,7 +73,8 @@ def backtrackBfs(layers,connexityMat,endVertexIdx):
             path[i] = layers[i][pretedents]
     return path
 
-
+def pathIdToPathVertex(pathId, V):
+    return [V[pathId[i]] for i in range(len(pathId))]
 
 def bfs(g, startVertex, targetVertex):
     """
@@ -96,7 +97,7 @@ def bfs(g, startVertex, targetVertex):
         layers.append(newLayer)
         lastLayer = layers[len(layers)-1]
     path = backtrackBfs(layers, connMat, targetVertexId)
-    return [V[path[i]] for i in range(len(path))]
+    return pathIdToPathVertex(path,V)
 
 def genCostMat(connMat, vertexToIndexDict,g):
     """
@@ -108,8 +109,31 @@ def genCostMat(connMat, vertexToIndexDict,g):
         toRet[vertexToIndexDict[fr],vertexToIndexDict[to]] = cost
     return toRet
     
-def djikstraBackTrack():
-    return
+def djikstraBackTrack(indexToDistance, connMat, costMat, targetVertexId, startVertexId):
+    """
+        narray(int)*narray(bool)*narray(int)*int->narray(int)
+
+        0-distances from startVertexId calculated by djikstra on the graph
+
+        1-connexity matrix
+
+        2-cost matrix
+
+        3-target vertex index
+
+        3-start vertex index
+    """
+    vertexNb = len(connMat)
+    rPath = [targetVertexId]
+    rConnMat = np.transpose(connMat)
+    while not startVertexId == rPath[len(rPath)-1]:
+        currVert = rPath[len(rPath)-1]
+        for edgeId in np.arange(vertexNb)[rConnMat[currVert]]:
+            if costMat[edgeId,currVert] + indexToDistance[edgeId] == indexToDistance[currVert]:
+                rPath.append(edgeId)
+                break
+    return np.flip(np.array(rPath))
+
 
 def djikstra(g, startVertex, targetVertex):
     """
@@ -126,12 +150,10 @@ def djikstra(g, startVertex, targetVertex):
     distances = np.zeros(len(V), "uint") + sys.maxsize
     distances[S[0]] = 0
     toVisitVertices = S.copy()
-    while len(neverToVisitAsNeighborAgainVertices) != len(V):
+    targetVertexId = vertToIndex[targetVertex]
+    while not targetVertexId in neverToVisitAsNeighborAgainVertices:
         currentVertices = toVisitVertices.copy()
         for currentVertex in currentVertices:
-            print(toVisitVertices)
-            print(neverToVisitAsNeighborAgainVertices)
-            input()
             neighbors = getNeighbors(currentVertex, connMat)
             if len(neighbors) == 0:
                 toVisitVertices.remove(currentVertex)
@@ -147,5 +169,5 @@ def djikstra(g, startVertex, targetVertex):
                     if (edgeVisitMat[:,neighbor]==connMat[:,neighbor]).all():
                         neverToVisitAsNeighborAgainVertices.append(neighbor) #never to visit as a neighbor
                         connMat[:,neighbor] = False #so get neighbors doesn't yell this vertex again.
-    
-    return S, distances
+    pathId = djikstraBackTrack(distances, generateConnexityMatrix(g,vertToIndex), costMat, targetVertexId, vertToIndex[startVertex])
+    return pathIdToPathVertex(pathId,V) 
