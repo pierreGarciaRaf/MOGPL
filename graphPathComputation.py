@@ -145,29 +145,30 @@ def djikstra(g, startVertex, targetVertex):
     costMat = genCostMat(connMat, vertToIndex, g)
     edgeVisitMat = np.zeros(connMat.shape, "bool")
     neverToVisitAsNeighborAgainVertices = [vertToIndex[startVertex]]
-    S = [vertToIndex[startVertex]]
-    currentVertices = [S[0]]
+    startVertexId = vertToIndex[startVertex]
+    currentVertices = [startVertexId]
     distances = np.zeros(len(V), "uint") + sys.maxsize
-    distances[S[0]] = 0
-    toVisitVertices = S.copy()
+    distances[startVertexId] = 0
+    toVisitVertices = [startVertexId]
     targetVertexId = vertToIndex[targetVertex]
     while not targetVertexId in neverToVisitAsNeighborAgainVertices:
         currentVertices = toVisitVertices.copy()
         for currentVertex in currentVertices:
             neighbors = getNeighbors(currentVertex, connMat)
-            if len(neighbors) == 0:
-                toVisitVertices.remove(currentVertex)
-                continue
+            if len(neighbors) == 0: #if there's no children or no children without fixed cost, it won't change
+                toVisitVertices.remove(currentVertex) # so we don't need to visit the neighbors of this vertex again
+                continue # note : a vertex must be in neverToVistiAsNeighborAgain for it to be removed from
+            # toVisitVertices.
             for neighbor in neighbors:
-                S.append(neighbor)
                 toVisitVertices.append(neighbor)
                 distances[neighbor] = min(distances[currentVertex]\
                                             + costMat[currentVertex, neighbor],
                                             distances[neighbor])
                 if currentVertex in neverToVisitAsNeighborAgainVertices:
                     edgeVisitMat[currentVertex, neighbor] = True
-                    if (edgeVisitMat[:,neighbor]==connMat[:,neighbor]).all():
-                        neverToVisitAsNeighborAgainVertices.append(neighbor) #never to visit as a neighbor
-                        connMat[:,neighbor] = False #so get neighbors doesn't yell this vertex again.
-    pathId = djikstraBackTrack(distances, generateConnexityMatrix(g,vertToIndex), costMat, targetVertexId, vertToIndex[startVertex])
+                    if (edgeVisitMat[:,neighbor]==connMat[:,neighbor]).all(): #if all parent's cost of this 
+                        #vertex are locked, then :
+                        neverToVisitAsNeighborAgainVertices.append(neighbor) #this vertex cost won't ever get lower
+                        connMat[:,neighbor] = False #get neighbors doesn't need to yell this vertex again.
+    pathId = djikstraBackTrack(distances, generateConnexityMatrix(g,vertToIndex), costMat, targetVertexId, startVertexId)
     return pathIdToPathVertex(pathId,V) 
