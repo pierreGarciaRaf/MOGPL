@@ -1,5 +1,6 @@
 import numpy as np
 from numpy.core.numerictypes import ScalarType
+import sys
 """
 
 vertex := string*int
@@ -46,6 +47,11 @@ def substractSets(setA,setB):
     """
         narray(a),narray(a) -> narray(a)
     """
+    if len(setA) == 0:
+        return []
+
+    if len(setB) == 0:
+        return setA
     toKeepFromA = np.ones(len(setA),"bool")
     for b in setB:
         toKeepFromA *= np.vectorize(lambda x : x != b)(setA)
@@ -92,5 +98,45 @@ def bfs(g, startVertex, targetVertex):
     path = backtrackBfs(layers, connMat, targetVertexId)
     return [V[path[i]] for i in range(len(path))]
 
+def genCostMat(connMat, vertexToIndexDict,g):
+    """
+        narray(int)*dict(vertex->int)*g->narray(int)
+    """
+    _,E = g
+    toRet = np.zeros(connMat.shape, "uint") + sys.maxsize
+    for fr,to,cost in E:
+        toRet[vertexToIndexDict[fr],vertexToIndexDict[to]] = cost
+    return toRet
+    
 
+def djikstra(g, startVertex, targetVertex):
+    """
+        graph*vertex*vertex -> list(vertex)
+    """
+    V,_ = g
+    vertToIndex = genVertToIndexDict(V)
+    connMat = generateConnexityMatrix(g,vertToIndex)
+    costMat = genCostMat(connMat, vertToIndex, g)
+    print(costMat)
+    edgeVisitMat = np.zeros(connMat.shape, "bool")
+    neverToVisitAgainVertices = [vertToIndex[startVertex]]
+    S = [vertToIndex[startVertex]]
+    currentVertices = [S[0]]
+    distances = np.zeros(len(V), "uint") + sys.maxsize
+    distances[S[0]] = 0
+    while len(neverToVisitAgainVertices) != len(V):
+        currentVertices = S.copy()
+        for currentVertex in currentVertices:
+            for neighbor in substractSets(  getNeighbors(currentVertex, connMat),
+                                            np.array(neverToVisitAgainVertices)):
 
+                S.append(neighbor)
+                distances[neighbor] = min(distances[currentVertex]\
+                                            + costMat[currentVertex, neighbor],
+                                            distances[neighbor])
+                print(distances[currentVertex], costMat[currentVertex, neighbor])
+                if currentVertex in neverToVisitAgainVertices:
+                    edgeVisitMat[currentVertex, neighbor] = True
+                    if (edgeVisitMat[:,neighbor]==connMat[:,neighbor]).all():
+                        neverToVisitAgainVertices.append(neighbor)
+    return S, distances
