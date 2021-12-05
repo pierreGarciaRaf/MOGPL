@@ -86,7 +86,7 @@ def bfs(g, startVertex, targetVertex):
     layers = [np.array([vertToIndex[startVertex]])]
     targetVertexId = vertToIndex[targetVertex]
     lastLayer = layers[len(layers)-1]
-    while not targetVertexId in lastLayer:
+    while not targetVertexId in lastLayer and len(lastLayer) > 0:
         newLayer = np.zeros(0,"uint8") 
         for id in lastLayer:
             neighbors = getNeighbors(id, connMat)            
@@ -96,6 +96,8 @@ def bfs(g, startVertex, targetVertex):
             newLayer = np.concatenate((newLayer,neighbors))
         layers.append(newLayer)
         lastLayer = layers[len(layers)-1]
+    if len(lastLayer) == 0:
+        return []
     path = backtrackBfs(layers, connMat, targetVertexId)
     return pathIdToPathVertex(path,V)
 

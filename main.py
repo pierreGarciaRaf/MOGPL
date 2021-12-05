@@ -1,5 +1,9 @@
 import graphDisplay
 import graphReader
 import graphPathComputation as gpc
+import graphComputePath
+import problemSolverBFS as psb
+
 mg,g = graphReader.createMultigraphAndGraphFromFile("graphs/graphEx2.mg")
-print(gpc.djikstra(g, ("a",1), ("g",8)))
+g2 = psb.removeHighestVertices(g, "a", lambda x : x, 2)
+graphDisplay.displayGraph(g2, "g2.png")
