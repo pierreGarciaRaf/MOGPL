@@ -108,6 +108,8 @@ def genCostMat(connMat, vertexToIndexDict,g):
         toRet[vertexToIndexDict[fr],vertexToIndexDict[to]] = cost
     return toRet
     
+def djikstraBackTrack():
+    return
 
 def djikstra(g, startVertex, targetVertex):
     """
@@ -117,26 +119,33 @@ def djikstra(g, startVertex, targetVertex):
     vertToIndex = genVertToIndexDict(V)
     connMat = generateConnexityMatrix(g,vertToIndex)
     costMat = genCostMat(connMat, vertToIndex, g)
-    print(costMat)
     edgeVisitMat = np.zeros(connMat.shape, "bool")
-    neverToVisitAgainVertices = [vertToIndex[startVertex]]
+    neverToVisitAsNeighborAgainVertices = [vertToIndex[startVertex]]
     S = [vertToIndex[startVertex]]
     currentVertices = [S[0]]
     distances = np.zeros(len(V), "uint") + sys.maxsize
     distances[S[0]] = 0
-    while len(neverToVisitAgainVertices) != len(V):
-        currentVertices = S.copy()
+    toVisitVertices = S.copy()
+    while len(neverToVisitAsNeighborAgainVertices) != len(V):
+        currentVertices = toVisitVertices.copy()
         for currentVertex in currentVertices:
-            for neighbor in substractSets(  getNeighbors(currentVertex, connMat),
-                                            np.array(neverToVisitAgainVertices)):
-
+            print(toVisitVertices)
+            print(neverToVisitAsNeighborAgainVertices)
+            input()
+            neighbors = getNeighbors(currentVertex, connMat)
+            if len(neighbors) == 0:
+                toVisitVertices.remove(currentVertex)
+                continue
+            for neighbor in neighbors:
                 S.append(neighbor)
+                toVisitVertices.append(neighbor)
                 distances[neighbor] = min(distances[currentVertex]\
                                             + costMat[currentVertex, neighbor],
                                             distances[neighbor])
-                print(distances[currentVertex], costMat[currentVertex, neighbor])
-                if currentVertex in neverToVisitAgainVertices:
+                if currentVertex in neverToVisitAsNeighborAgainVertices:
                     edgeVisitMat[currentVertex, neighbor] = True
                     if (edgeVisitMat[:,neighbor]==connMat[:,neighbor]).all():
-                        neverToVisitAgainVertices.append(neighbor)
+                        neverToVisitAsNeighborAgainVertices.append(neighbor) #never to visit as a neighbor
+                        connMat[:,neighbor] = False #so get neighbors doesn't yell this vertex again.
+    
     return S, distances
