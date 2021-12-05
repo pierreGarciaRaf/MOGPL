@@ -1,4 +1,5 @@
 import numpy as np
+from numpy.core.numerictypes import ScalarType
 """
 
 vertex := string*int
@@ -45,14 +46,32 @@ def substractSets(setA,setB):
     """
         narray(a),narray(a) -> narray(a)
     """
-    toKeepFromA = np.zeros(len(setA),"bool")
+    toKeepFromA = np.ones(len(setA),"bool")
     for b in setB:
-        toKeepFromA += np.vectorize(lambda x : x == b)(setA)
+        toKeepFromA *= np.vectorize(lambda x : x != b)(setA)
     return setA[toKeepFromA]
+
+def backtrackBfs(layers,connexityMat,endVertexIdx):
+    """
+        list(narray(int))*narray(bool)*int -> narray(int)
+    """
+    path = np.zeros(len(layers), "uint8")
+    path[-1] = endVertexIdx
+    for i in range(len(layers)-2,-1,-1):
+        isPathPossible = connexityMat[layers[i],path[i+1]]
+        
+        pretedents = np.argmax(isPathPossible)
+        if pretedents is np.array:
+            path[i] = layers[i][pretedents[0]]
+        else:
+            path[i] = layers[i][pretedents]
+    return path
+
+
 
 def bfs(g, startVertex, targetVertex):
     """
-        graph*vertex*vertex -> list(narray(int))
+        graph*vertex*vertex -> list(vertex)
     """
     V,E = g
     vertToIndex = genVertToIndexDict(V)
@@ -61,23 +80,17 @@ def bfs(g, startVertex, targetVertex):
     targetVertexId = vertToIndex[targetVertex]
     lastLayer = layers[len(layers)-1]
     while not targetVertexId in lastLayer:
-        newLayer = np.zeros(0,"uint8")
-        
+        newLayer = np.zeros(0,"uint8") 
         for id in lastLayer:
-            neighbors = getNeighbors(id, connMat)
-            print(neighbors)
-            print(np.vectorize(lambda x : V[x])(neighbors))
-            
+            neighbors = getNeighbors(id, connMat)            
             for layerIdx in range(len(layers)-1):
                 neighbors = substractSets(neighbors, layers[layerIdx])
-            print(neighbors)
-            newLayer = np.concatenate(newLayer,neighbors)
-        
+            neighbors = substractSets(neighbors,newLayer)
+            newLayer = np.concatenate((newLayer,neighbors))
         layers.append(newLayer)
-        print(layers)
         lastLayer = layers[len(layers)-1]
-        input()
-    return layers
+    path = backtrackBfs(layers, connMat, targetVertexId)
+    return [V[path[i]] for i in range(len(path))]
 
 
-    
+
