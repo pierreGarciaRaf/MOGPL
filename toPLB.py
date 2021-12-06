@@ -1,6 +1,7 @@
 import gurobipy as grb
 import problemSolverBFS as psb
 import graphReader
+import constraints
 
 def getIncomingEdges(E,vertex):
     toRet = []
@@ -73,3 +74,8 @@ def resolvePL(model,edgeToVar):
     return path,cost
     
 
+
+def solveType4PL(g, a, b, ta, to):
+    g = constraints.apply_constraints(g,a,b,ta,to)
+    model,edgeToVar = writeLpType4(g, a, b)
+    return resolvePL(model, edgeToVar)[0]

@@ -2,6 +2,8 @@ from operator import ne
 import numpy as np
 from numpy.core.numerictypes import ScalarType
 import sys
+import constraints
+import problemSolverBFS
 """
 
 vertex := string*int
@@ -175,3 +177,10 @@ def djikstra(g, startVertex, targetVertex):
                         connMat[:,neighbor] = False #get neighbors doesn't need to yell this vertex again.
     pathId = djikstraBackTrack(distances, generateConnexityMatrix(g,vertToIndex), costMat, targetVertexId, startVertexId)
     return pathIdToPathVertex(pathId,V) 
+
+
+def solveType4DjikstraOptimized(g,a,b,ta,to):
+    g = constraints.apply_constraints(g,a,b,ta,to)
+    a = min(problemSolverBFS.getGraphGeneratedVertices(g,a), key = lambda v : v[1])
+    b = max(problemSolverBFS.getGraphGeneratedVertices(g, b), key = lambda v : v[1])
+    return djikstra(g,a,b)
