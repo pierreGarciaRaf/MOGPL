@@ -1,5 +1,4 @@
-#! /usr/bin/python3
-
+import constraints
 import numpy as np
 
 def get_argmin(l):
@@ -28,7 +27,8 @@ def get_cost(g, a, b):
             return edge[2]
     return np.Infinity
 
-def type1_dijkstra(g, a, b): # arrivée au plus tôt
+def type1_dijkstra(g, a, b, ta, to): # arrivée au plus tôt
+    g = constraints.apply_constraints(g, a, b, ta, to)
     v = g[0]
     e = g[1]
     new_e = []
@@ -119,6 +119,7 @@ def type1_dijkstra(g, a, b): # arrivée au plus tôt
     # backtrack
     res = []
     node = end_nodes[tmin_index]
+    
     while path[node] not in starting_nodes:
         res.append(node)
         node = path[node]
@@ -128,7 +129,8 @@ def type1_dijkstra(g, a, b): # arrivée au plus tôt
     res.reverse()
     return res
 
-def type2_dijkstra(g, a, b): # départ au plus tard
+def type2_dijkstra(g, a, b, ta, to): # départ au plus tard
+    g = constraints.apply_constraints(g, a, b, ta, to)
     v = g[0]
     e = g[1]
     
@@ -217,7 +219,8 @@ def type2_dijkstra(g, a, b): # départ au plus tard
             index_max = r
     return res[index_max]
 
-def type3_dijkstra(g, a, b): # chemin le plus rapide
+def type3_dijkstra(g, a, b, ta, to): # chemin le plus rapide
+    g = constraints.apply_constraints(g, a, b, ta, to)
     v = g[0]
     e = g[1]
     
@@ -315,7 +318,8 @@ def type3_dijkstra(g, a, b): # chemin le plus rapide
         d.append(duration)
     return res[np.argmin(d)]
 
-def type4_dijkstra(g, a, b): # plus court chemin
+def type4_dijkstra(g, a, b, ta, to): # plus court chemin
+    g = constraints.apply_constraints(g, a, b, ta, to)
     v = g[0]
     e = g[1]
     # ajout du noeud source et du noeud terminal
