@@ -1,4 +1,6 @@
+from numpy.core.fromnumeric import argmin
 import graphPathComputation as gpc
+
 """
 vertex := string*int
 0-Name
@@ -25,6 +27,14 @@ def genWithoutVertices(g, toRemoveId):
     return newG
 
 
+def getGraphGeneratedVertices(g, mgVertex):
+    V,_ = g
+    toRet = []
+    for v in V:
+        if v[0] == mgVertex:
+            toRet.append(v)
+    return toRet
+
 def removeHighestVertices(g, vertexName, toSortWith, numberToKeep):
     V,E = g
     verticesToFilterId = []
@@ -32,61 +42,69 @@ def removeHighestVertices(g, vertexName, toSortWith, numberToKeep):
         if v[0] == vertexName:
             verticesToFilterId.append(id)
     verticesToFilterId = sorted(verticesToFilterId, key = lambda i : toSortWith(V[i][1]))
-    
+
     if numberToKeep > len(verticesToFilterId):
-        return False
+        return (" ",-1),[]
     verticesToRemove = []
     for i in range(numberToKeep, len(verticesToFilterId)):
         verticesToRemove.append(verticesToFilterId[i])
-    return genWithoutVertices(g, verticesToRemove)
+    
+    return V[verticesToFilterId[numberToKeep-1]],genWithoutVertices(g, verticesToRemove)
 
 
-def generateForBfs(g, startVertex, endVertex, type):
+def generateForBfs(g, startVertexName, endVertexName, type):
     if type <1 or type > 3:
         raise Exception("bfs can only resolve 1,2 & 3 problems, not %d"%type)
     if type == 1:
+        f = lambda x : x
         toKeep = 1
-        toAdd = removeHighestVertices(g, endVertex, lambda x : -x, 1)
+        ev,toAdd = removeHighestVertices(g, endVertexName, f, 1)
+        startVertices = getGraphGeneratedVertices(g,startVertexName)
+        sv = min(startVertices, key = lambda v : v[1])
         gs = []
-        while toAdd != False:
-            gs.append(toAdd)
+        while len(toAdd) > 0:
+            gs.append((sv,ev,toAdd))
             toKeep += 1
-            toAdd = removeHighestVertices(g,endVertex,lambda x : -x, toKeep)
+            ev,toAdd = removeHighestVertices(g,endVertexName,f, toKeep)
+        
+        
         return gs
     if type == 2:
+        f = lambda x : -x
         toKeep = 1
-        toAdd = removeHighestVertices(g, startVertex, lambda x : x, 1)
+        sv,toAdd = removeHighestVertices(g, startVertexName, f, 1)
+        ev = max(getGraphGeneratedVertices(g,endVertexName))
         gs = []
-        while toAdd != False:
-            gs.append(toAdd)
+        while len(toAdd) > 0:
+            gs.append((sv,ev,toAdd))
             toKeep += 1
-            toAdd = removeHighestVertices(g,startVertex,lambda x : x, toKeep)
+            sv,toAdd = removeHighestVertices(g,startVertexName,f, toKeep)
         return gs
     if type == 3:
+        f1 = lambda x : -x
+        f2 = lambda x : x
         toKeepStart = 1
         toKeepFinish = 1
-        toAdd = removeHighestVertices(\
-                removeHighestVertices(g, startVertex, lambda x : x, toKeepStart)\
-                                       , endVertex, lambda x: -x, toKeepFinish)
-
+        sv,toAdd = removeHighestVertices(g, startVertexName, f1, toKeepStart)
+        ev,toAdd = removeHighestVertices(toAdd, endVertexName, f2, toKeepFinish)
         gs = []
-        while toAdd != False:
+        while len(toAdd) > 0:
             toKeepFinish += 1
             toKeepStart = 1
-            toAdd = removeHighestVertices(\
-                removeHighestVertices(g, startVertex, lambda x : x, toKeepStart)\
-                                       , endVertex, lambda x: -x, toKeepFinish)
-            while toAdd != False:
-                gs.append(toAdd)
+            sv,toAdd = removeHighestVertices(g, startVertexName, f1, toKeepStart)
+            ev,toAdd = removeHighestVertices(toAdd, endVertexName, f2, toKeepFinish)
+            while len(toAdd) > 0:
+                gs.append((sv,ev,toAdd))
                 toKeepStart += 1
-                toAdd = removeHighestVertices(\
-                removeHighestVertices(g, startVertex, lambda x : x, toKeepStart)\
-                                       , endVertex, lambda x: -x, toKeepFinish)
+                sv,toAdd = removeHighestVertices(g, startVertexName, f1, toKeepStart)
+                if len(toAdd) == 0:
+                    break
+                ev,toAdd = removeHighestVertices(toAdd, endVertexName, f2, toKeepFinish)
         return gs
 
-def solveBFS(modifiedGraphs, startVertex, endVertex):
-    for g in modifiedGraphs:
-        sol = gpc.bfs(g,startVertex, endVertex)
+def solveBFS(g, startVertexName, endVertexName, type):
+    for sv,ev,sg in generateForBfs(g,startVertexName,endVertexName, type):
+        sol = gpc.bfs(sg, sv, ev)
         if len(sol) > 0:
             return sol
     return []
