@@ -73,8 +73,3 @@ def resolvePL(model,edgeToVar):
     return path,cost
     
 
-mg,g = graphReader.createMultigraphAndGraphFromFile("graphs/graphEx2.mg")
-model,edgeToVar = writeLpType4(g, "a", "f")
-path, cost = resolvePL(model, edgeToVar)
-print(path)
-print(cost)
