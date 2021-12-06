@@ -1,3 +1,4 @@
+from operator import ne
 import numpy as np
 from numpy.core.numerictypes import ScalarType
 import sys
@@ -41,7 +42,7 @@ def getNeighbors(vertexId, connMat):
     """
         int,narray(bool) -> narray(int)
     """
-    return np.arange(len(connMat))[connMat[vertexId]]
+    return np.arange(len(connMat), dtype="uint")[connMat[vertexId]]
 
 def substractSets(setA,setB):
     """
@@ -86,16 +87,18 @@ def bfs(g, startVertex, targetVertex):
     layers = [np.array([vertToIndex[startVertex]])]
     targetVertexId = vertToIndex[targetVertex]
     lastLayer = layers[len(layers)-1]
-    while not targetVertexId in lastLayer:
+    while not targetVertexId in lastLayer and len(lastLayer) > 0:
         newLayer = np.zeros(0,"uint8") 
         for id in lastLayer:
-            neighbors = getNeighbors(id, connMat)            
+            neighbors = getNeighbors(id, connMat)
             for layerIdx in range(len(layers)-1):
                 neighbors = substractSets(neighbors, layers[layerIdx])
             neighbors = substractSets(neighbors,newLayer)
             newLayer = np.concatenate((newLayer,neighbors))
-        layers.append(newLayer)
+        layers.append(newLayer.astype("uint"))
         lastLayer = layers[len(layers)-1]
+    if len(lastLayer) == 0:
+        return []
     path = backtrackBfs(layers, connMat, targetVertexId)
     return pathIdToPathVertex(path,V)
 
