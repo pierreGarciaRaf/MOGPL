@@ -364,7 +364,7 @@ def type4_dijkstra(g, a, b, ta, to): # plus court chemin
         
         # get neighbors of current source
         N = neighbors(g, source)
-
+        
         # update cost
         for nb in N:
             if nb not in cost.keys():
