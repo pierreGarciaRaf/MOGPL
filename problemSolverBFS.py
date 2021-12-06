@@ -15,6 +15,10 @@ edge := vertex*vertex*int
 graph := list(vertex)*list(edge)
 """
 def genWithoutVertices(g, toRemoveId):
+    """
+        graph*list(int)->graph
+        copies g without the vertices at index toRemoveId.
+    """
     V,E = g
     newG = V.copy(),E.copy()
     removedVertices = []
@@ -28,6 +32,9 @@ def genWithoutVertices(g, toRemoveId):
 
 
 def getGraphGeneratedVertices(g, mgVertex):
+    """
+        graph * string -> list(vertex)
+    """
     V,_ = g
     toRet = []
     for v in V:
@@ -36,6 +43,9 @@ def getGraphGeneratedVertices(g, mgVertex):
     return toRet
 
 def removeHighestVertices(g, vertexName, toSortWith, numberToKeep):
+    """
+        graph * string * fun(int->sortable) * int -> graph
+    """
     V,E = g
     verticesToFilterId = []
     for id,v in enumerate(V):
@@ -66,8 +76,6 @@ def generateForBfs(g, startVertexName, endVertexName, type):
             gs.append((sv,ev,toAdd))
             toKeep += 1
             ev,toAdd = removeHighestVertices(g,endVertexName,f, toKeep)
-        
-        
         return gs
     if type == 2:
         f = lambda x : -x
